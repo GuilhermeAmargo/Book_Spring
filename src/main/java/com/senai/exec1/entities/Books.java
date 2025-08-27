@@ -1,4 +1,4 @@
-package com.senai.exec1.entity;
+package com.senai.exec1.entities;
 
 import java.io.Serializable;
 import java.util.Objects;
