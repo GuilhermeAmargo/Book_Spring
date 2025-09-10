@@ -5,7 +5,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.senai.exec1.dtos.BookRequest;
+import com.senai.exec1.dtos.BookResponse;
 import com.senai.exec1.entities.Books;
+import com.senai.exec1.mappers.BookMapper;
 import com.senai.exec1.repositories.BooksRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -16,12 +19,16 @@ public class BookService {
     @Autowired
     private BooksRepository booksRepository;
 
-    public List <Books> getAllBooks() {
-        return booksRepository.findAll();
+    public List <BookResponse> getAllBooks() {
+            return booksRepository.findAll()
+                .stream()
+                .map(BookMapper::toDTO)
+                .toList();
     }
 
-    public Books getBookById(Long id) {
+    public BookResponse getBookById(Long id) {
         return booksRepository.findById(id)
+        .map(BookMapper::toDTO)
         .orElseThrow(() -> new RuntimeException("Livro não encontrado: " + id));
     }
 
@@ -33,16 +40,18 @@ public class BookService {
         }
     }
 
-    public Books saveBook(Books book) {
-        return booksRepository.save(book);
+    public BookResponse saveBook(BookRequest request) {
+        Books book = BookMapper.toEntity(request);
+        Books savedBook = booksRepository.save(book);
+        return BookMapper.toDTO(savedBook);
     }
 
-    public void updateBook(Long id, Books book) {
+    public void updateBook(Long id, BookRequest request) {
         Books aux = booksRepository.getReferenceById(id);
-        aux.setAuthor(book.getAuthor());
-        aux.setName(book.getName());
-        aux.setPrice(book.getPrice());
-        aux.setReleaseyear(book.getReleaseyear());
+        aux.setAuthor(request.author());
+        aux.setName(request.name());
+        aux.setPrice(request.price());
+        aux.setReleaseyear(request.releaseyear());
         
         booksRepository.save(aux);
 

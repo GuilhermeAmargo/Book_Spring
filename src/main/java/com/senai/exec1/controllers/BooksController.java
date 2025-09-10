@@ -2,10 +2,8 @@ package com.senai.exec1.controllers;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jersey.JerseyProperties.Servlet;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.senai.exec1.entities.Books;
-import com.senai.exec1.repositories.BooksRepository;
+import com.senai.exec1.dtos.BookRequest;
+import com.senai.exec1.dtos.BookResponse;
 import com.senai.exec1.services.BookService;
 
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/books")
@@ -33,13 +31,13 @@ public class BooksController {
 
     // Get
     @GetMapping
-    public ResponseEntity<List<Books>> getBooks() {
+    public ResponseEntity<List<BookResponse>> getBooks() {
         return ResponseEntity.ok(bookService.getAllBooks());
     }
 
     // Get id
     @GetMapping("/{id}")
-    public ResponseEntity<Books> getBookById(@PathVariable Long id) {
+    public ResponseEntity<BookResponse> getBookById(@PathVariable Long id) {
         return ResponseEntity.ok(bookService.getBookById(id));
     }
 
@@ -52,21 +50,21 @@ public class BooksController {
     
     // Post
     @PostMapping
-    public ResponseEntity<Books> saveBook(@RequestBody Books book) {
-        Books newBook = bookService.saveBook(book);
+    public ResponseEntity<BookResponse> saveBook(@Valid @RequestBody BookRequest request) {
+        BookResponse response = bookService.saveBook(request);
 
         URI location = ServletUriComponentsBuilder
             .fromCurrentRequest()
             .path("/{id}")
-            .buildAndExpand(newBook.getId())
+            .buildAndExpand(response.id())
             .toUri();
-        return ResponseEntity.created(location).body(newBook);
+        return ResponseEntity.created(location).body(response);
     }
 
     // Put
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateBook(@PathVariable Long id, @RequestBody Books book) {
-        bookService.updateBook(id, book);
+    public ResponseEntity<Void> updateBook(@PathVariable Long id,@Valid @RequestBody BookRequest request) {
+        bookService.updateBook(id, request);
         return ResponseEntity.noContent().build();
     }
     
